@@ -1,45 +1,45 @@
+# 🧭 ERPNext Self-Hosted Docker with Custom Apps Installtion Documentation
+
+Comprehensive guide to build, configure, deploy, backup, and restore an **ERPNext** environment using Docker with **custom applications**.
+
+---
+
 ## ✅ Prerequisites
 
 Ensure the following software is installed and running:
+
 - **Docker**
 - **Docker Compose**
 - **Git**
-- **Optional**: `jq` (for JSON validation), `nano` or `VS Code` (for editing files)
+- **Optional Tools**:  
+  - `jq` — JSON validation  
+  - `nano` or `VS Code` — file editing
 
-## ERPNext Self-Hosted Docker Container with Custom Apps
+---
 
-### Building the Custom Docker Image
+## 🏗️ Building the Custom Docker Image
 
-#### Step 1: Clone the Frappe Docker Repository
+### 1. Clone the Frappe Docker Repository
 
-Clone the official `frappe_docker` repository and navigate into the `development` directory.
-
-```shell
+```bash
 git clone https://github.com/frappe/frappe_docker
 cd frappe_docker/development
-```
+````
 
-#### Step 2: Configure Custom Applications via `apps.json`
+---
 
-Create a file named `apps.json` that lists all the apps to be installed.
+### 2. Configure Custom Applications via `apps.json`
 
-First, remove the example file:
+Create a new file named `apps.json` listing the apps to include.
 
-```shell
+```bash
 rm -f apps-example.json
-```
-
-Then, create and edit the new file using your preferred editor:
-
-```shell
-# Using nano
 nano apps.json
-
-# Or using VS Code
+# or
 code apps.json
 ```
 
-**`apps.json` Example:**
+**Example `apps.json`:**
 
 ```json
 [
@@ -74,103 +74,86 @@ code apps.json
 ]
 ```
 
-> [!Important]
-> **Dependencies**: You must manually add app dependencies. For example, `hrms` requires `erpnext` to be in the list. **Private Repos**: For private repositories, use an HTTPS git URL with a Personal Access Token (PAT): `https://{{PAT}}@github.com/your-org/your-private-app.git`.
+> [!IMPORTANT]
+>
+> * **Dependencies:** Ensure required apps (e.g., `hrms` requires `erpnext`) are listed.
+> * **Private Repos:** Use HTTPS with a **Personal Access Token (PAT)** if needed:
+>   `https://{{PAT}}@github.com/your-org/your-private-app.git`
 
-#### Step 3: Encode `apps.json` to Base64
+---
 
-The Docker build process requires the `apps.json` content to be passed as a Base64 encoded string.
+### 3. Encode `apps.json` to Base64
 
-Note
+From inside `frappe_docker/development`:
 
-Ensure you are in the `frappe_docker/development` directory.
-
-```shell
+```bash
 export APPS_JSON_BASE64=$(base64 -w 0 apps.json)
 ```
 
-To validate the string, you can decode it and check the contents:
+Validate encoding:
 
-```shell
-# Decode the variable into a test file and display it
+```bash
 echo -n ${APPS_JSON_BASE64} | base64 -d > apps-test-output.json
 cat apps-test-output.json
-
-# Optional: Validate the original JSON syntax (requires jq)
-jq empty apps.json
+jq empty apps.json  # optional validation
 ```
 
-#### Step 4: Build and Push the Custom Docker Image
+---
 
-This is a multi-stage process to build, tag, and push your image.
+### 4. Build and Push the Custom Docker Image
 
-##### 🏗️ A. Build the Image
+Navigate to the root folder:
 
-Note
-
-Navigate back to the root `frappe_docker` directory.
-
-```shell
+```bash
 cd ..
 ```
 
-Run the build command using the **Quick Build** method for faster builds.
+Run the build command:
 
-**Quick Build Command Example:**
-
-Refer to [configure-build](https://github.com/frappe/frappe_docker/blob/main/docs/custom-apps.md#configure-build) for full details.
-
-> [!TIP]
-> Change the `tag` to your Docker Hub `username` and tag the image as `version`. 
-
-```shell
+```bash
 docker build \
   --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
   --build-arg=FRAPPE_BRANCH=version-15 \
   --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
-  --tag=riyann00b/frappe-custom:{latest-version here} \
+  --tag=riyann00b/frappe-custom:{latest-version} \
   --file=images/layered/Containerfile .
 ```
 
-Important
+Verify build:
 
-☕ Sit back, relax, and have a coffee. This will take a while.
-
-Verify the new image:
-
-```shell
+```bash
 docker images
 ```
 
-#### Step 5: Docker Compose Configuration and Launch
+> ☕ This process may take a while. Be patient.
 
-##### Create the Final `pwd.yml` Docker Compose File
+---
 
-> [!TIP]
-> Navigate to the `frappe_docker` directory if not already there:
+## ⚙️ Docker Compose Setup
 
-```shell
-cd /path/to/your/frappe_docker
-# or
-cd ..
+### 5. Create and Configure `pwd.yml`
+
+Go to the project directory:
+
+```bash
+cd /path/to/frappe_docker
 ```
 
-Edit the `pwd.yml` file with your preferred text editor:
+Edit `pwd.yml`:
 
-```shell
-# Using nano
+```bash
 sudo nano pwd.yml
-
-# Or using VS Code
+# or
 code pwd.yml
 ```
 
-> [!Tip]
-> - Replace all instances of the default image (e.g., `frappe/erpnext:v15.xx.x`) with your custom image (e.g., `riyann00b/frappe-custom:version`).
-> - Add `platform: linux/amd64` to all services in the `pwd.yml` file to ensure compatibility (e.g., for Linux, Apple M1/M2 systems).
-> - Update the `create-site` service's command to include your custom apps for installation.
- 
-**Example modification in `pwd.yml`:**
+**Modify:**
+
+* Replace default ERPNext image with your custom image `(riyann00b/frappe-custom:{latest-version})`.
+* Add `platform: linux/amd64` to all services.
+* Include all your apps in the `create-site` command.
+
+**Example:**
 
 ```yaml
 create-site:
@@ -179,58 +162,66 @@ bench new-site --mariadb-user-host-login-scope='%' --admin-password=admin --db-r
 '--install-app YOUR-CUSTOM-APPs-name' --set-default frontend;
 ```
 
-See example `pwd.yml` file [here]().
-
-
-> [!TIP] 
-> Apps to copy for the `--install-app` flag:
-
+> [!TIP]
+>  Apps to copy for the --install-app flag:
 ```shell
---install-app payments --install-app india_compliance --install-app ecommerce_integrations --install-app print_designer --install-app insights
+--install-app payments --install-app hrms --install-app india_compliance --install-app ecommerce_integrations --install-app print_designer --install-app insights
+```
+---
+
+### 6. Launch the Stack
+
+```bash
+docker compose -f pwd.yml up -d
 ```
 
-#### Step 6: Launch the Stack and Finalize Setup
+Monitor logs:
 
-1. **Launch all services:** From the root `frappe_docker` directory, run:
-    
-    ```shell
-    docker compose -f pwd.yml up -d
-    ```
-    
-2. **Monitor site creation**:
-    
-    ```shell
-    docker logs frappe_docker-create-site-1 -f
-    ```
-    
-1. **Access your site:** Open your browser and navigate to [http://localhost:8080](http://localhost:8080/).
+```bash
+docker logs frappe_docker-create-site-1 -f
+```
 
+Access ERPNext at:
+👉 [http://localhost:8080](http://localhost:8080)
 
-### How to update?
+---
 
-Change the image tag for all the frappe framework services, take down all the containers and start them again with new images. Once the containers are running you'll need to migrate sites with `bench --site all migrate` command. The image and container replacement is done as per the container orchestrator.
+## 🔄 Updating ERPNext
 
-### How to Backup?
+1. Create New Image
+2. Update image tags in your compose file.
+3. Restart containers:
 
-Create backup service or stack.
+```bash
+docker compose down
+docker compose up -d
+```
+
+3. Run migrations:
+
+```bash
+docker exec -it frappe_docker-backend-1 bench --site all migrate
+```
+
+---
+
+## 💾 Backup Configuration
+
+Create a backup stack file: `backup-job.yml`
 
 ```yaml
-# backup-job.yml
 version: "3.7"
 services:
   backup:
     image: frappe/erpnext:${VERSION}
     entrypoint: ["bash", "-c"]
-    command:
-      - |
-        bench --site all backup
-        ## Uncomment for restic snapshots.
-        # restic snapshots || restic init
-        # restic backup sites
-        ## Uncomment to keep only last n=30 snapshots.
-        # restic forget --group-by=paths --keep-last=30 --prune
+    command: |
+      bench --site all backup
+      # Optional Restic backup
+      # restic snapshots || restic init
+      # restic backup sites
+      # restic forget --group-by=paths --keep-last=30 --prune
     environment:
-      # Set correct environment variables for restic
       - RESTIC_REPOSITORY=s3:https://s3.endpoint.com/restic
       - AWS_ACCESS_KEY_ID=access_key
       - AWS_SECRET_ACCESS_KEY=secret_access_key
@@ -251,91 +242,122 @@ volumes:
     name: ${PROJECT_NAME:-erpnext}_sites
 ```
 
-In case of single docker host setup, add crontab entry for backup every 6 hours.
+**Cron-based backup (every 6 hour
 
-```
+```bash
 0 */6 * * * docker compose -p erpnext exec frappe_docker-backend-1 bench --site all backup --with-files > /dev/null
 ```
-
-Notes:
-
-- Make sure `docker-compose` or `docker compose` is available in path during execution.
-- Change the cron string as per need.
-- Set the correct project name in place of `erpnext`.
-- For Docker Swarm add it as a [swarm-cronjob](https://github.com/crazy-max/swarm-cronjob)
-- Add it as a `CronJob` in case of Kubernetes cluster.
-
-# Restoring an ERPNext Backup 
-
-Prerequisites
-
-    Your local Docker environment is running.
-    You have the complete set of backup files (database, public files, private files) saved locally.
-    You know the name of your ERPNext site (e.g., frontend).
-    You know the full filenames of your backups (e.g., YYYY-MM-DD-frontend-database.sql.gz).
-
-Step 1: Identify the Backend Container
-First, determine the exact name of your main ERPNext backend container.
-Run docker ps in your terminal:
-bash
-
-docker ps
-
-Use code with caution.
-From your configuration, the correct container name is frappe_docker-backend-1.
-Step 2: Copy Backup Files into the Container
-Use the docker cp command to transfer your local backup files into the container's sites directory.
-
-    Note: Ensure you are in the local directory containing your backup files when running these commands. Replace YYYY-MM-DD_HHMMSS with your actual timestamp.
-
-bash
-
-# Copy the database backup file
-docker cp YYYY-MM-DD_HHMMSS-frontend-database.sql.gz frappe_docker-backend-1:/home/frappe/frappe-bench/sites/database.sql.gz
-
-# Copy the public files TAR
-docker cp YYYY-MM-DD_HHMMSS-frontend-files.tar frappe_docker-backend-1:/home/frappe/frappe-bench/sites/public_files.tar
-
-# Copy the private files TAR
-docker cp YYYY-MM-DD_HHMMSS-frontend-private-files.tar frappe_docker-backend-1:/home/frappe/frappe-bench/sites/private_files.tar
-
-Use code with caution.
-(We rename the copied files to generic names like database.sql.gz and public_files.tar within the container for simplicity in the next step.)
-Step 3: Access the Container's Shell
-Open a command-line interface (shell) session inside the running backend container:
-bash
-
+**Manual Backup**
+```bash
 docker exec -it frappe_docker-backend-1 /bin/bash
+```
 
-Use code with caution.
-Step 4: Run the Restore Command
-Once inside the container's shell, navigate to the frappe-bench directory and execute the bench restore command:
-bash
+```bash
+bench --site frontend backup --with-files
+```
 
+or
+
+```bash
+docker exec frappe_docker-backend-1 bench --site frontend backup --with-files
+```
+
+copy backup to local path
+
+```bash
+docker cp frappe_docker-backend-1:/home/frappe/frappe-bench/sites/frontend/private/backups/ /home/riyan/Documents/backups
+```
+
+---
+
+## 🔁 Restoring an ERPNext Backup
+
+### Prerequisites
+
+* Docker environment running.
+* Backup files available (`database`, `public`, `private`).
+* Site name known (e.g., `frontend`).
+
+---
+
+### Step 1: Identify Backend Container
+
+```bash
+docker ps
+```
+
+Expected container: `frappe_docker-backend-1`
+
+---
+
+### Step 2: Copy Backup Files From Local to Docker 
+
+```bash
+docker cp YYYY-MM-DD_HHMMSS-frontend-database.sql.gz frappe_docker-backend-1:/home/frappe/frappe-bench/sites/database.sql.gz
+docker cp YYYY-MM-DD_HHMMSS-frontend-files.tar frappe_docker-backend-1:/home/frappe/frappe-bench/sites/public_files.tar
+docker cp YYYY-MM-DD_HHMMSS-frontend-private-files.tar frappe_docker-backend-1:/home/frappe/frappe-bench/sites/private_files.tar
+```
+
+---
+
+### Step 3: Access Container Shell
+
+```bash
+docker exec -it frappe_docker-backend-1 /bin/bash
+```
+
+---
+
+### Step 4: Restore the Site
+
+```bash
 cd frappe-bench
+bench --site frontend --force restore YYYY-MM-DD_HHMMSS-frontend-database.sql.gz \
+  --with-public-files YYYY-MM-DD_HHMMSS-frontend-public_files.tar \
+  --with-private-files YYYY-MM-DD_HHMMSS-frontend-private_files.tar
+```
 
-bench --site frontend --force restore database.sql.gz --with-public-files public_files.tar --with-private-files private_files.tar
+or
 
-Use code with caution.
-Step 5: Finalize and Migrate
-After the restore process completes successfully, the administrator password for the restored site will be reset to admin.
-Run the migration command to ensure the database schema is up-to-date with your current code version:
-bash
+```bash
+docker exec frappe_docker-backend-1 bench --site frontend restore /tmp/database.sql.gz --with-public-files /tmp/public-files.tar --with-private-files /tmp/private-files.tar --force
 
+```
+
+---
+
+### Step 5: Finalize and Migrate
+
+```bash
 bench --site frontend migrate
-
-Use code with caution.
-You can now exit the container shell:
-bash
-
 exit
+```
 
-Use code with caution.
-Step 6: Restart Docker Containers
-It is best practice to restart your services to ensure all changes are loaded correctly:
-bash
+---
 
-docker-compose restart
+### Step 6: Restart Containers
 
-Use code with caution.
-Your ERPNext site should now be fully restored and accessible. You can log in with the username Administrator and the password admin.
+```bash
+docker compose restart
+```
+
+Access ERPNext at:
+👉 [http://localhost:8080](http://localhost:8080)
+
+Default login:
+
+```
+Username: Administrator
+Password: admin
+```
+
+---
+
+## 🧩 References
+
+* [Frappe Docker Documentation](https://github.com/frappe/frappe_docker)
+* [ERPNext GitHub Repository](https://github.com/frappe/erpnext)
+* [Docker Compose Docs](https://docs.docker.com/compose/)
+
+```
+```
