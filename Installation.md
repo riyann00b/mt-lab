@@ -52,6 +52,10 @@ code apps.json
     "branch": "version-15"
   },
   {
+    "url": "https://github.com/frappe/hrms.git",
+    "branch": "version-15"
+  },
+  {
     "url": "https://github.com/resilient-tech/india-compliance",
     "branch": "version-15"
   },
@@ -124,7 +128,7 @@ docker build \
   --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
   --build-arg=FRAPPE_BRANCH=version-15 \
   --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
-  --tag=riyann00b/frappe-custom:v15.87.0 \
+  --tag=riyann00b/frappe-custom:{latest-version here} \
   --file=images/layered/Containerfile .
 ```
 
@@ -260,3 +264,78 @@ Notes:
 - Set the correct project name in place of `erpnext`.
 - For Docker Swarm add it as a [swarm-cronjob](https://github.com/crazy-max/swarm-cronjob)
 - Add it as a `CronJob` in case of Kubernetes cluster.
+
+# Restoring an ERPNext Backup 
+
+Prerequisites
+
+    Your local Docker environment is running.
+    You have the complete set of backup files (database, public files, private files) saved locally.
+    You know the name of your ERPNext site (e.g., frontend).
+    You know the full filenames of your backups (e.g., YYYY-MM-DD-frontend-database.sql.gz).
+
+Step 1: Identify the Backend Container
+First, determine the exact name of your main ERPNext backend container.
+Run docker ps in your terminal:
+bash
+
+docker ps
+
+Use code with caution.
+From your configuration, the correct container name is frappe_docker-backend-1.
+Step 2: Copy Backup Files into the Container
+Use the docker cp command to transfer your local backup files into the container's sites directory.
+
+    Note: Ensure you are in the local directory containing your backup files when running these commands. Replace YYYY-MM-DD_HHMMSS with your actual timestamp.
+
+bash
+
+# Copy the database backup file
+docker cp YYYY-MM-DD_HHMMSS-frontend-database.sql.gz frappe_docker-backend-1:/home/frappe/frappe-bench/sites/database.sql.gz
+
+# Copy the public files TAR
+docker cp YYYY-MM-DD_HHMMSS-frontend-files.tar frappe_docker-backend-1:/home/frappe/frappe-bench/sites/public_files.tar
+
+# Copy the private files TAR
+docker cp YYYY-MM-DD_HHMMSS-frontend-private-files.tar frappe_docker-backend-1:/home/frappe/frappe-bench/sites/private_files.tar
+
+Use code with caution.
+(We rename the copied files to generic names like database.sql.gz and public_files.tar within the container for simplicity in the next step.)
+Step 3: Access the Container's Shell
+Open a command-line interface (shell) session inside the running backend container:
+bash
+
+docker exec -it frappe_docker-backend-1 /bin/bash
+
+Use code with caution.
+Step 4: Run the Restore Command
+Once inside the container's shell, navigate to the frappe-bench directory and execute the bench restore command:
+bash
+
+cd frappe-bench
+
+bench --site frontend --force restore database.sql.gz --with-public-files public_files.tar --with-private-files private_files.tar
+
+Use code with caution.
+Step 5: Finalize and Migrate
+After the restore process completes successfully, the administrator password for the restored site will be reset to admin.
+Run the migration command to ensure the database schema is up-to-date with your current code version:
+bash
+
+bench --site frontend migrate
+
+Use code with caution.
+You can now exit the container shell:
+bash
+
+exit
+
+Use code with caution.
+Step 6: Restart Docker Containers
+It is best practice to restart your services to ensure all changes are loaded correctly:
+bash
+
+docker-compose restart
+
+Use code with caution.
+Your ERPNext site should now be fully restored and accessible. You can log in with the username Administrator and the password admin.
