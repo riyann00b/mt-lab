@@ -1,4 +1,4 @@
-# 🧭 ERPNext Self-Hosted Docker with Custom Apps Installtion Documentation
+# 🧭 ERPNext Self-Hosted Docker with Custom Apps Installation Documentation
 
 Comprehensive guide to build, configure, deploy, backup, and restore an **ERPNext** environment using Docker with **custom applications**.
 
@@ -15,16 +15,19 @@ Ensure the following software is installed and running:
   - `jq` — JSON validation  
   - `nano` or `VS Code` — file editing
 
+> [!NOTE]
+> This guide assumes you're working on a Linux system with a Bash-compatible shell.
+> Adjust the commands as needed for your operating system and shell.
+
 ---
 
-## 🏗️ Building the Custom Docker Image
-
+## 🏗️ Building the Custom Docker Imageaccouding to os and your shell
 ### 1. Clone the Frappe Docker Repository
 
 ```bash
 git clone https://github.com/frappe/frappe_docker
 cd frappe_docker/development
-````
+```
 
 ---
 
@@ -110,6 +113,9 @@ cd ..
 
 Run the build command:
 
+> [!IMPORTANT]
+> **Make sure to change your tag: `--tag=<your-docker-username>` and set the version `<latest-version>` to the current release (for example, `v15.88.1`).**
+
 ```bash
 docker build \
   --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
@@ -119,13 +125,13 @@ docker build \
   --file=images/layered/Containerfile .
 ```
 
+> ☕ This process may take a while. Be patient.
+
 Verify build:
 
 ```bash
 docker images
 ```
-
-> ☕ This process may take a while. Be patient.
 
 ---
 
@@ -169,6 +175,8 @@ bench new-site --mariadb-user-host-login-scope='%' --admin-password=admin --db-r
 ```
 ---
 
+Check out my [pwd.yml file]()
+
 ### 6. Launch the Stack
 
 ```bash
@@ -188,8 +196,8 @@ Access ERPNext at:
 
 ## 🔄 Updating ERPNext
 
-1. Create New Image
-2. Update image tags in your compose file.
+1. Create New Image (follow the instructions from 1 to 4)
+2. Update image tags in your pwd.yml file.
 3. Restart containers:
 
 ```bash
@@ -197,7 +205,7 @@ docker compose down
 docker compose up -d
 ```
 
-3. Run migrations:
+4. Run migrations:
 
 ```bash
 docker exec -it frappe_docker-backend-1 bench --site all migrate
@@ -207,7 +215,7 @@ docker exec -it frappe_docker-backend-1 bench --site all migrate
 
 ## 💾 Backup Configuration
 
-Create a backup stack file: `backup-job.yml`
+Create a backup stack file: `backup-job.yml` or include it in your `pwd.yml` file.
 
 ```yaml
 version: "3.7"
@@ -242,11 +250,12 @@ volumes:
     name: ${PROJECT_NAME:-erpnext}_sites
 ```
 
-**Cron-based backup (every 6 hour
+**Cron-based backup (every 6 hours)**
 
 ```bash
 0 */6 * * * docker compose -p erpnext exec frappe_docker-backend-1 bench --site all backup --with-files > /dev/null
 ```
+
 **Manual Backup**
 ```bash
 docker exec -it frappe_docker-backend-1 /bin/bash
@@ -312,9 +321,9 @@ docker exec -it frappe_docker-backend-1 /bin/bash
 
 ```bash
 cd frappe-bench
-bench --site frontend --force restore YYYY-MM-DD_HHMMSS-frontend-database.sql.gz \
-  --with-public-files YYYY-MM-DD_HHMMSS-frontend-public_files.tar \
-  --with-private-files YYYY-MM-DD_HHMMSS-frontend-private_files.tar
+bench --site frontend --force restore database.sql.gz \
+  --with-public-files public_files.tar \
+  --with-private-files private_files.tar
 ```
 
 or
@@ -322,6 +331,12 @@ or
 ```bash
 docker exec frappe_docker-backend-1 bench --site frontend restore /tmp/database.sql.gz --with-public-files /tmp/public-files.tar --with-private-files /tmp/private-files.tar --force
 
+```
+
+Default SQL password:
+
+```bash
+admin
 ```
 
 ---
@@ -346,7 +361,7 @@ Access ERPNext at:
 
 Default login:
 
-```
+```bash
 Username: Administrator
 Password: admin
 ```
@@ -358,6 +373,3 @@ Password: admin
 * [Frappe Docker Documentation](https://github.com/frappe/frappe_docker)
 * [ERPNext GitHub Repository](https://github.com/frappe/erpnext)
 * [Docker Compose Docs](https://docs.docker.com/compose/)
-
-```
-```

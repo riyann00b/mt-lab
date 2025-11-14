@@ -1,2 +1,7 @@
-# motitaka-lab
-Comprehensive documentation and examples of Moti-Taka’s digital operations, including ERPNext setup, POS configurations, n8n automations, and other tech workflows that power the store.
+# mt-lab
+
+Comprehensive documentation of Moti-Taka’s digital operations.
+
+## ERPNext Setup
+
+[Installation](https://github.com/riyann00b/mt-lab/blob/main/Installation.md)
