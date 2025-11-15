@@ -1,0 +1,489 @@
+{
+  "name": "Invoice",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "operation": "send-document",
+        "instanceName": "Moti Taka",
+        "remoteJid": "=91{{ $('Message Format').item.json.Phone }}",
+        "media": "={{ $json.media }}",
+        "caption": "={{ $('Message Format').item.json.Message }}",
+        "fileName": "invoice.pdf",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        -5712,
+        240
+      ],
+      "id": "9756bbf3-f582-4af7-b2b5-9427d00693de",
+      "name": "Enviar documento",
+      "credentials": {
+        "evolutionApi": {
+          "id": "pWeH2wWjAwh6X5My",
+          "name": "Evolution account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "f293ec62-b539-431d-8735-daa087934809",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -6608,
+        240
+      ],
+      "id": "3e40810d-4bf7-4cea-b891-3c47b1ad42fc",
+      "name": "ERPNext-Webhook",
+      "webhookId": "f293ec62-b539-431d-8735-daa087934809"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8ecda20-dc02-4b5f-a5bc-b0a74e1246e0",
+              "name": "Message",
+              "value": "=✨ *Thank you {{ $json.body.customer }} for shopping with Moti Taka!* ✨ \n🧾 *Invoice No:* {{ $json.body.name }}\n📅 *Date:* {{ $json.body.posting_date }}\n🛍️ *Your Order:* {{ $json.body.items.map(item => item.item_name).join(\", \") }}\n💵 *Total Paid:* {{ $json.body.base_grand_total }}\n💳 *Payment Method:* {{ $json.body.payments.filter(p => p.amount !== 0).map(p => p.mode_of_payment).join(\", \") }}\nloyalty_points: {{ $json.body.loyalty_points }}\n\nWe appreciate your visit and hope to see you again soon! \n\n📍 *Moti Taka: Quality & Style You Deserve*",
+              "type": "string"
+            },
+            {
+              "id": "532b8d81-38a6-484f-8365-cdd3acc9b06a",
+              "name": "Phone",
+              "value": "={{ $json.body.contact_mobile }}",
+              "type": "number"
+            },
+            {
+              "id": "2b8a16f4-c11f-4959-93b0-9e4987bf2e07",
+              "name": "Invoice Number",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6384,
+        240
+      ],
+      "id": "2e93e0d3-2fd3-46db-b7d0-9670c3f9fa88",
+      "name": "Message Format"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/method/frappe.utils.print_format.download_pdf?doctype=POS%20Invoice&name={{ $json['Invoice Number'] }}&format=GST%20T-Pos%20Invoice&no_letterhead=0",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "erpNextApi",
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "response": {}
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6160,
+        240
+      ],
+      "id": "75940fe8-f849-4354-b05f-257290696a6d",
+      "name": "PDF",
+      "credentials": {
+        "erpNextApi": {
+          "id": "YtLVTW6PeRjbU9jN",
+          "name": "ERPNext account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Convert binary PDF to base64\n  const base64Data = item.binary.data.data.toString('base64');\n\n  return {\n    json: {\n      media: base64Data,                 // Evolution API expects this field\n      fileName: item.binary.data.fileName,\n      mimeType: item.binary.data.mimeType\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5936,
+        240
+      ],
+      "id": "3e5e0590-6a3b-4185-adf8-50265649b752",
+      "name": "Base64"
+    }
+  ],
+  "pinData": {
+    "ERPNext-Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "host.docker.internal:5678",
+            "user-agent": "python-requests/2.32.5",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "content-length": "6669"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "name": "ACC-PSINV-2025-00004-2",
+            "title": "MD Riyan Nazeer",
+            "customer": "MD Riyan Nazeer",
+            "customer_name": "MD Riyan Nazeer",
+            "pos_profile": "MotiTaka PoS",
+            "consolidated_invoice": null,
+            "company": "Moti Taka",
+            "posting_date": "2025-10-30",
+            "posting_time": "18:29:42.367391",
+            "due_date": "2025-10-30",
+            "return_against": null,
+            "items": [
+              {
+                "name": "t7k2vu2gd0",
+                "owner": "Administrator",
+                "creation": "2025-10-30 18:46:59.570579",
+                "modified": "2025-10-30 18:47:01.906505",
+                "modified_by": "Administrator",
+                "docstatus": 1,
+                "idx": 1,
+                "barcode": "GCSDMB09",
+                "has_item_scanned": 0,
+                "item_code": "GCS-DM-B-09",
+                "item_name": "Glace Cotton Suit",
+                "customer_item_code": null,
+                "description": "Glace Cotton Suit",
+                "gst_hsn_code": "63079011",
+                "item_group": "dress material",
+                "brand": "Innaya",
+                "image": "",
+                "qty": 1,
+                "stock_uom": "Nos",
+                "uom": "Nos",
+                "conversion_factor": 1,
+                "stock_qty": 1,
+                "price_list_rate": 1000,
+                "base_price_list_rate": 1000,
+                "margin_type": "",
+                "margin_rate_or_amount": 0,
+                "rate_with_margin": 0,
+                "discount_percentage": 0,
+                "discount_amount": 0,
+                "distributed_discount_amount": 100,
+                "base_rate_with_margin": 0,
+                "rate": 1000,
+                "amount": 1000,
+                "item_tax_template": null,
+                "gst_treatment": "Nil-Rated",
+                "base_rate": 1000,
+                "base_amount": 1000,
+                "pricing_rules": "",
+                "is_free_item": 0,
+                "grant_commission": 1,
+                "net_rate": 900,
+                "net_amount": 900,
+                "base_net_rate": 900,
+                "base_net_amount": 900,
+                "taxable_value": 0,
+                "igst_rate": 0,
+                "cgst_rate": 0,
+                "sgst_rate": 0,
+                "cess_rate": 0,
+                "cess_non_advol_rate": 0,
+                "igst_amount": 0,
+                "cgst_amount": 0,
+                "sgst_amount": 0,
+                "cess_amount": 0,
+                "cess_non_advol_amount": 0,
+                "delivered_by_supplier": 0,
+                "income_account": "Sales - MT",
+                "is_fixed_asset": 0,
+                "asset": null,
+                "finance_book": null,
+                "expense_account": "Cost of Goods Sold - MT",
+                "deferred_revenue_account": null,
+                "service_stop_date": null,
+                "enable_deferred_revenue": 0,
+                "service_start_date": null,
+                "service_end_date": null,
+                "weight_per_unit": 0,
+                "total_weight": 0,
+                "weight_uom": null,
+                "warehouse": "Stores - MT",
+                "target_warehouse": null,
+                "quality_inspection": null,
+                "serial_and_batch_bundle": null,
+                "use_serial_batch_fields": 1,
+                "allow_zero_valuation_rate": 0,
+                "item_tax_rate": "{}",
+                "actual_batch_qty": 0,
+                "actual_qty": 1,
+                "serial_no": null,
+                "batch_no": null,
+                "sales_order": null,
+                "so_detail": null,
+                "pos_invoice_item": null,
+                "delivery_note": null,
+                "dn_detail": null,
+                "delivered_qty": 0,
+                "cost_center": "Main - MT",
+                "project": null,
+                "page_break": 0,
+                "parent": "ACC-PSINV-2025-00004-2",
+                "parentfield": "items",
+                "parenttype": "POS Invoice",
+                "doctype": "POS Invoice Item",
+                "__unsaved": 1
+              },
+              {
+                "name": "t7k3mfvv0l",
+                "owner": "Administrator",
+                "creation": "2025-10-30 18:46:59.570579",
+                "modified": "2025-10-30 18:47:01.906505",
+                "modified_by": "Administrator",
+                "docstatus": 1,
+                "idx": 2,
+                "barcode": "GCSDMB07",
+                "has_item_scanned": 0,
+                "item_code": "GCS-DM-B-07",
+                "item_name": "Glace Cotton Suit",
+                "customer_item_code": null,
+                "description": "Glace Cotton Suit",
+                "gst_hsn_code": "63079011",
+                "item_group": "dress material",
+                "brand": "Innaya",
+                "image": "",
+                "qty": 1,
+                "stock_uom": "Nos",
+                "uom": "Nos",
+                "conversion_factor": 1,
+                "stock_qty": 1,
+                "price_list_rate": 1500,
+                "base_price_list_rate": 1500,
+                "margin_type": "",
+                "margin_rate_or_amount": 0,
+                "rate_with_margin": 0,
+                "discount_percentage": 0,
+                "discount_amount": 0,
+                "distributed_discount_amount": 150,
+                "base_rate_with_margin": 0,
+                "rate": 1500,
+                "amount": 1500,
+                "item_tax_template": null,
+                "gst_treatment": "Nil-Rated",
+                "base_rate": 1500,
+                "base_amount": 1500,
+                "pricing_rules": "",
+                "is_free_item": 0,
+                "grant_commission": 1,
+                "net_rate": 1350,
+                "net_amount": 1350,
+                "base_net_rate": 1350,
+                "base_net_amount": 1350,
+                "taxable_value": 0,
+                "igst_rate": 0,
+                "cgst_rate": 0,
+                "sgst_rate": 0,
+                "cess_rate": 0,
+                "cess_non_advol_rate": 0,
+                "igst_amount": 0,
+                "cgst_amount": 0,
+                "sgst_amount": 0,
+                "cess_amount": 0,
+                "cess_non_advol_amount": 0,
+                "delivered_by_supplier": 0,
+                "income_account": "Sales - MT",
+                "is_fixed_asset": 0,
+                "asset": null,
+                "finance_book": null,
+                "expense_account": "Cost of Goods Sold - MT",
+                "deferred_revenue_account": null,
+                "service_stop_date": null,
+                "enable_deferred_revenue": 0,
+                "service_start_date": null,
+                "service_end_date": null,
+                "weight_per_unit": 0,
+                "total_weight": 0,
+                "weight_uom": null,
+                "warehouse": "Stores - MT",
+                "target_warehouse": null,
+                "quality_inspection": null,
+                "serial_and_batch_bundle": null,
+                "use_serial_batch_fields": 1,
+                "allow_zero_valuation_rate": 0,
+                "item_tax_rate": "{}",
+                "actual_batch_qty": 0,
+                "actual_qty": 1,
+                "serial_no": null,
+                "batch_no": null,
+                "sales_order": null,
+                "so_detail": null,
+                "pos_invoice_item": null,
+                "delivery_note": null,
+                "dn_detail": null,
+                "delivered_qty": 0,
+                "cost_center": "Main - MT",
+                "project": null,
+                "page_break": 0,
+                "parent": "ACC-PSINV-2025-00004-2",
+                "parentfield": "items",
+                "parenttype": "POS Invoice",
+                "doctype": "POS Invoice Item",
+                "__unsaved": 1
+              }
+            ],
+            "apply_discount_on": "Grand Total",
+            "additional_discount_percentage": 10,
+            "payments": [
+              {
+                "name": "t7kmsto3ks",
+                "owner": "Administrator",
+                "creation": "2025-10-30 18:46:59.570579",
+                "modified": "2025-10-30 18:47:01.906505",
+                "modified_by": "Administrator",
+                "docstatus": 1,
+                "idx": 1,
+                "default": 1,
+                "mode_of_payment": "UPI",
+                "amount": 2250,
+                "reference_no": null,
+                "account": "Cash - MT",
+                "type": "Cash",
+                "base_amount": 2250,
+                "clearance_date": null,
+                "parent": "ACC-PSINV-2025-00004-2",
+                "parentfield": "payments",
+                "parenttype": "POS Invoice",
+                "doctype": "Sales Invoice Payment",
+                "__unsaved": 1
+              },
+              {
+                "name": "t7kpttu99h",
+                "owner": "Administrator",
+                "creation": "2025-10-30 18:46:59.570579",
+                "modified": "2025-10-30 18:47:01.906505",
+                "modified_by": "Administrator",
+                "docstatus": 1,
+                "idx": 2,
+                "default": 0,
+                "mode_of_payment": "Cash",
+                "amount": 0,
+                "reference_no": null,
+                "account": "Cash - MT",
+                "type": "Cash",
+                "base_amount": 0,
+                "clearance_date": null,
+                "parent": "ACC-PSINV-2025-00004-2",
+                "parentfield": "payments",
+                "parenttype": "POS Invoice",
+                "doctype": "Sales Invoice Payment",
+                "__unsaved": 1
+              },
+              {
+                "name": "t7km35tvs0",
+                "owner": "Administrator",
+                "creation": "2025-10-30 18:46:59.570579",
+                "modified": "2025-10-30 18:47:01.906505",
+                "modified_by": "Administrator",
+                "docstatus": 1,
+                "idx": 3,
+                "default": 0,
+                "mode_of_payment": "Credit Card",
+                "amount": 0,
+                "reference_no": null,
+                "account": "Cash - MT",
+                "type": "Bank",
+                "base_amount": 0,
+                "clearance_date": null,
+                "parent": "ACC-PSINV-2025-00004-2",
+                "parentfield": "payments",
+                "parenttype": "POS Invoice",
+                "doctype": "Sales Invoice Payment",
+                "__unsaved": 1
+              }
+            ],
+            "loyalty_points": 0,
+            "loyalty_amount": 0,
+            "redeem_loyalty_points": 0,
+            "base_grand_total": 2250,
+            "total_commission": 0,
+            "contact_mobile": "9381186153"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/f293ec62-b539-431d-8735-daa087934809",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Enviar documento": {
+      "main": [
+        []
+      ]
+    },
+    "ERPNext-Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Format": {
+      "main": [
+        [
+          {
+            "node": "PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF": {
+      "main": [
+        [
+          {
+            "node": "Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base64": {
+      "main": [
+        [
+          {
+            "node": "Enviar documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "49a09ba4-a14c-4c4c-97fa-e047c90d72ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd50102f95691ef8800cdf6f680f2348073b20a72bd555c57188bfda52e35fba"
+  },
+  "id": "OaJ02hBWL35WJoWb",
+  "tags": []
+}

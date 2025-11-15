@@ -81,7 +81,8 @@ code apps.json
 >
 > * **Dependencies:** Ensure required apps (e.g., `hrms` requires `erpnext`) are listed.
 > * **Private Repos:** Use HTTPS with a **Personal Access Token (PAT)** if needed:
->   `https://{{PAT}}@github.com/your-org/your-private-app.git`
+>
+> >   `https://{{PAT}}@github.com/your-org/your-private-app.git`
 
 ---
 
