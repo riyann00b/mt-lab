@@ -15,7 +15,7 @@ services:
       - evolution_instances:/evolution/instances
     networks:
       - evolution-net
-      - dokploy-network
+      - frappe_network
     env_file:
       - .env
     expose:
@@ -31,6 +31,7 @@ services:
   #     - "3000:80"
   #   networks:
   #     - evolution-net
+  #     - frappe_network
 
   redis:
     container_name: evolution_redis
@@ -45,7 +46,7 @@ services:
       evolution-net:
         aliases:
           - evolution-redis
-      dokploy-network:
+      frappe_network:
         aliases:
           - evolution-redis
     expose:
@@ -72,7 +73,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - evolution-net
-      - dokploy-network
+      - frappe_network
     expose:
       - "5432"
     ports:
@@ -87,5 +88,5 @@ networks:
   evolution-net:
     name: evolution-net
     driver: bridge
-  dokploy-network:
+  frappe_network:
     external: true
