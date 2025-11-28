@@ -7,8 +7,7 @@ volumes:
 
 x-shared: &shared
   restart: always
-  image: docker.n8n.io/n8nio/n8n:latest
-  platform: linux/amd64
+  image: docker.n8n.io/n8nio/n8n
   environment:
     - DB_TYPE=postgresdb
     - DB_POSTGRESDB_HOST=postgres
@@ -25,18 +24,18 @@ x-shared: &shared
     - redis
   volumes:
     - n8n_storage:/home/node/.n8n
+  networks:
+    - default
+    - shared_network
   depends_on:
     redis:
       condition: service_healthy
     postgres:
       condition: service_healthy
-  networks:
-    - frappe_network
 
 services:
   postgres:
     image: postgres:16
-    platform: linux/amd64
     restart: always
     environment:
       - POSTGRES_USER
@@ -56,12 +55,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - frappe_network
 
   redis:
     image: redis:6-alpine
-    platform: linux/amd64
     restart: always
     volumes:
       - redis_storage:/data
@@ -70,8 +66,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - frappe_network
 
   n8n:
     <<: *shared
@@ -83,18 +77,16 @@ services:
     command: worker
     depends_on:
       - n8n
-      - redis
-      - postgres
 
   gotenberg:
     image: gotenberg/gotenberg:8
-    platform: linux/amd64
-    ports:
-      - 3000:3000
     restart: always
+    ports:
+      - "127.0.0.1:3001:3000"
     networks:
-      - frappe_network
+      - shared_network
 
 networks:
-  frappe_network:
+  shared_network:
     external: true
+    name: shared_network
