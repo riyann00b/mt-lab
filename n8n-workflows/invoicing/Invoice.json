@@ -3,9 +3,76 @@
   "nodes": [
     {
       "parameters": {
+        "httpMethod": "POST",
+        "path": "f293ec62-b539-431d-8735-daa087934809",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        -224
+      ],
+      "id": "3700fc7a-e655-474f-a8c2-f812c032c50a",
+      "name": "ERPNext-Webhook1",
+      "webhookId": "f293ec62-b539-431d-8735-daa087934809"
+    },
+    {
+      "parameters": {
+        "url": "http://frontend:8080/api/method/frappe.utils.print_format.download_pdf",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "erpNextApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "doctype",
+              "value": "=POS Invoice"
+            },
+            {
+              "name": "name",
+              "value": "=ACC-PSINV-2025-00132"
+            },
+            {
+              "name": "format",
+              "value": "GST T-Pos Invoice"
+            },
+            {
+              "name": "no_letterhead",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        -224
+      ],
+      "id": "65b26a66-34d8-4861-bbfd-7d0221d4b751",
+      "name": "HTTP Request",
+      "credentials": {
+        "erpNextApi": {
+          "id": "DznqoD9uhEos1FR0",
+          "name": "ERPNext account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "resource": "messages-api",
         "operation": "send-document",
-        "instanceName": "Moti Taka",
+        "instanceName": "test",
         "remoteJid": "=91{{ $('Message Format').item.json.Phone }}",
         "media": "={{ $json.media }}",
         "caption": "={{ $('Message Format').item.json.Message }}",
@@ -15,33 +82,17 @@
       "type": "n8n-nodes-evolution-api.evolutionApi",
       "typeVersion": 1,
       "position": [
-        -5712,
-        240
+        656,
+        -224
       ],
-      "id": "9756bbf3-f582-4af7-b2b5-9427d00693de",
-      "name": "Enviar documento",
+      "id": "408e1d93-db20-45ac-a5bc-df554f243fb7",
+      "name": "Enviar documento1",
       "credentials": {
         "evolutionApi": {
-          "id": "pWeH2wWjAwh6X5My",
+          "id": "R0yfgl8T4QYZkOEN",
           "name": "Evolution account"
         }
       }
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "f293ec62-b539-431d-8735-daa087934809",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -6608,
-        240
-      ],
-      "id": "3e40810d-4bf7-4cea-b891-3c47b1ad42fc",
-      "name": "ERPNext-Webhook",
-      "webhookId": "f293ec62-b539-431d-8735-daa087934809"
     },
     {
       "parameters": {
@@ -72,37 +123,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -6384,
-        240
+        -16,
+        -224
       ],
-      "id": "2e93e0d3-2fd3-46db-b7d0-9670c3f9fa88",
+      "id": "71706fd7-19d0-43fa-a402-176c61113b49",
       "name": "Message Format"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=http://host.docker.internal:8080/api/method/frappe.utils.print_format.download_pdf?doctype=POS%20Invoice&name={{ $json['Invoice Number'] }}&format=GST%20T-Pos%20Invoice&no_letterhead=0",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "erpNextApi",
-        "options": {
-          "allowUnauthorizedCerts": true,
-          "response": {}
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -6160,
-        240
-      ],
-      "id": "75940fe8-f849-4354-b05f-257290696a6d",
-      "name": "PDF",
-      "credentials": {
-        "erpNextApi": {
-          "id": "YtLVTW6PeRjbU9jN",
-          "name": "ERPNext account"
-        }
-      }
     },
     {
       "parameters": {
@@ -111,15 +136,15 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5936,
-        240
+        432,
+        -224
       ],
-      "id": "3e5e0590-6a3b-4185-adf8-50265649b752",
+      "id": "d0253908-ff90-4d8d-86c9-9f018411cbfc",
       "name": "Base64"
     }
   ],
   "pinData": {
-    "ERPNext-Webhook": [
+    "ERPNext-Webhook1": [
       {
         "json": {
           "headers": {
@@ -423,12 +448,7 @@
     ]
   },
   "connections": {
-    "Enviar documento": {
-      "main": [
-        []
-      ]
-    },
-    "ERPNext-Webhook": {
+    "ERPNext-Webhook1": {
       "main": [
         [
           {
@@ -439,18 +459,7 @@
         ]
       ]
     },
-    "Message Format": {
-      "main": [
-        [
-          {
-            "node": "PDF",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "PDF": {
+    "HTTP Request": {
       "main": [
         [
           {
@@ -461,11 +470,22 @@
         ]
       ]
     },
+    "Message Format": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Base64": {
       "main": [
         [
           {
-            "node": "Enviar documento",
+            "node": "Enviar documento1",
             "type": "main",
             "index": 0
           }
@@ -473,17 +493,15 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "executionOrder": "v1"
   },
-  "versionId": "49a09ba4-a14c-4c4c-97fa-e047c90d72ca",
+  "versionId": "b0516a0e-1162-4160-a667-8b2eff737e37",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "dd50102f95691ef8800cdf6f680f2348073b20a72bd555c57188bfda52e35fba"
+    "instanceId": "539001f338fc249a7420959c1dd2f4bac01cd21d36ea27f729d040eb339cfbc1"
   },
-  "id": "OaJ02hBWL35WJoWb",
+  "id": "Wd8WWAKSMzYPGkf8",
   "tags": []
 }
